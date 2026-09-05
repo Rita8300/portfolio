@@ -7,33 +7,12 @@ export default function Home() {
   useEffect(() => {
     const doc = document;
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const finePointer = window.matchMedia('(pointer: fine)').matches;
     const cleanups = [];
     const on = (el, ev, fn, opts) => {
       if (!el) return;
       el.addEventListener(ev, fn, opts);
       cleanups.push(() => el.removeEventListener(ev, fn, opts));
     };
-
-    // --- 表紙: クリック / Enter / Space で開く ---
-    doc.body.style.overflow = 'hidden';
-    const cover = doc.querySelector('.cover');
-    const openCover = () => {
-      if (!cover || cover.classList.contains('is-open')) return;
-      cover.classList.add('is-open');
-      doc.body.style.overflow = '';
-      const main = doc.getElementById('top');
-      if (main) main.focus({ preventScroll: true });
-    };
-    on(cover, 'click', openCover);
-    on(cover, 'keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
-        e.preventDefault();
-        openCover();
-      }
-    });
-    // ディープリンク(#about など)で来たら表紙をすぐ開く
-    if (window.location.hash && window.location.hash !== '#hero') openCover();
 
     // --- スクロール表示アニメ + ジャンプ移動のフォールバック ---
     const revealEls = Array.from(doc.querySelectorAll('[data-reveal]'));
@@ -56,7 +35,6 @@ export default function Home() {
       watched.forEach((el) => io.observe(el));
       cleanups.push(() => io.disconnect());
 
-      // 画面内・画面上に既にある要素は即表示（初回ロード / ハッシュジャンプ対策）
       const sweep = () => {
         const vh = window.innerHeight || doc.documentElement.clientHeight;
         watched.forEach((el) => {
@@ -72,12 +50,8 @@ export default function Home() {
       on(window, 'load', sweep);
       on(window, 'hashchange', () => setTimeout(sweep, 60));
       on(window, 'resize', sweep, { passive: true });
-      // 念のため、遅延読み込み後にもう一度
       setTimeout(sweep, 300);
-      setTimeout(sweep, 1200);
 
-      // スクロール中もスイープ。速いジャンプやアンカー移動での IO 取りこぼしを拾う。
-      // requestAnimationFrame は非表示タブで止まるため時間ベースで間引く。
       let lastSweep = 0;
       on(
         window,
@@ -94,62 +68,19 @@ export default function Home() {
       watched.forEach(show);
     }
 
-    // --- ヒーローのスポットライト ---
-    const masthead = doc.querySelector('.masthead');
-    const spot = doc.querySelector('.hero-spot');
-    if (masthead && spot && !prefersReduced && finePointer) {
-      on(masthead, 'pointermove', (e) => {
-        const r = masthead.getBoundingClientRect();
-        spot.style.setProperty('--mx', `${e.clientX - r.left}px`);
-        spot.style.setProperty('--my', `${e.clientY - r.top}px`);
-        spot.style.opacity = '1';
-      });
-      on(masthead, 'pointerleave', () => {
-        spot.style.opacity = '0';
-      });
-    }
-
-    // --- ヒーローのタグから該当セクションへ ---
-    const tagTargets = { '会社法ゼミ': '#about', 'IT業界志望': '#vision' };
-    doc.querySelectorAll('.tags button.tag').forEach((btn) => {
+    // --- 開閉トグル（Featured Works / Experience 共通） ---
+    doc.querySelectorAll('[data-toggle]').forEach((btn) => {
       on(btn, 'click', () => {
-        const sel = tagTargets[btn.textContent.trim()];
-        const el = sel && doc.querySelector(sel);
-        if (el) el.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'start' });
-      });
-    });
-
-    // --- Projects の開閉 ---
-    doc.querySelectorAll('.proj-toggle').forEach((btn) => {
-      on(btn, 'click', () => {
-        const proj = btn.closest('.proj');
-        if (!proj) return;
-        const open = proj.classList.toggle('is-open');
+        const wrap = btn.closest('.expandable');
+        if (!wrap) return;
+        const open = wrap.classList.toggle('is-open');
         btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        btn.textContent = open ? '閉じる' : btn.dataset.label || '詳しく見る';
       });
     });
-
-    // --- Strengths カードのチルト ---
-    if (!prefersReduced && finePointer) {
-      doc.querySelectorAll('.card').forEach((card) => {
-        on(card, 'pointermove', (e) => {
-          const r = card.getBoundingClientRect();
-          const px = (e.clientX - r.left) / r.width;
-          const py = (e.clientY - r.top) / r.height;
-          card.style.transform = `perspective(600px) rotateX(${(py - 0.5) * -6}deg) rotateY(${(px - 0.5) * 6}deg)`;
-          card.style.setProperty('--gx', `${px * 100}%`);
-          card.style.setProperty('--gy', `${py * 100}%`);
-        });
-        on(card, 'pointerleave', () => {
-          card.style.transform = '';
-        });
-      });
-    }
 
     // --- アドレスをコピー ---
-    const copyBtn = Array.from(doc.querySelectorAll('.contact-actions .btn')).find((b) =>
-      b.textContent.includes('コピー')
-    );
+    const copyBtn = doc.querySelector('[data-copy]');
     const toast = doc.querySelector('.toast-inner');
     let toastTimer;
     on(copyBtn, 'click', async () => {
@@ -180,7 +111,6 @@ export default function Home() {
     return () => {
       clearTimeout(toastTimer);
       cleanups.forEach((fn) => fn());
-      doc.body.style.overflow = '';
     };
   }, []);
 
@@ -188,19 +118,19 @@ export default function Home() {
     <>
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>宮本琉太 | 福岡大学 法学部 3年</title>
+        <title>宮本琉太 | Web制作・サービス企画</title>
         <meta
           name="description"
-          content="宮本琉太（福岡大学 法学部 3年）のポートフォリオ。会社法を学びながら、AIを活用したアプリ開発（暗記学習アプリなど）に取り組む学生。強み・制作実績・経験・志望をまとめています。"
+          content="福岡大学法学部の学生。React / TypeScriptでの開発やサービス企画に取り組んでいます。学習アプリ「おぼえこ」、新規事業企画「MachiQuest」などの制作をまとめたポートフォリオです。"
         />
-        <meta name="theme-color" content="#f6f7f8" />
+        <meta name="theme-color" content="#ffffff" />
         <meta name="color-scheme" content="light" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <meta property="og:type" content="website" />
-        <meta property="og:title" content="宮本琉太 | 福岡大学 法学部 3年" />
+        <meta property="og:title" content="宮本琉太 | Web制作・サービス企画" />
         <meta
           property="og:description"
-          content="会社法を学びながら、AIを活用したアプリ開発（暗記学習アプリ「おぼえこ」など）に取り組む学生のポートフォリオ。"
+          content="福岡大学法学部の学生。React / TypeScriptでの開発やサービス企画、学習アプリ「おぼえこ」・新規事業企画「MachiQuest」などをまとめたポートフォリオ。"
         />
         <meta property="og:url" content="https://ryuta-miyamoto.lolipop-now.app/" />
         <meta name="twitter:card" content="summary" />
@@ -208,420 +138,494 @@ export default function Home() {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </Head>
 
-      <div className="cover" role="button" tabIndex={0} aria-label="詳細を見る">
-        <div className="cover-inner">
-          <p className="cover-kicker">福岡大学 法学部 3年</p>
-          <p className="cover-name">宮本琉太</p>
-          <p className="cover-cta">
-            <span>詳細を見る</span>
-            <span aria-hidden="true" className="cover-chevron" />
-          </p>
-        </div>
-      </div>
-
       <div className="page">
         <header className="topbar">
-          <a href="#hero" className="wordmark">
+          <a href="#top" className="wordmark">
             宮本琉太
           </a>
-          <a href="#contact" className="topbar-link">
-            Contact
-          </a>
+          <nav className="topnav">
+            <a href="#work">Work</a>
+            <a href="#experience">Experience</a>
+            <a href="#contact">Contact</a>
+          </nav>
         </header>
 
         <main id="top" tabIndex={-1}>
-          {/* ===== Masthead ===== */}
-          <section id="hero" className="masthead">
-            <div aria-hidden="true" className="hero-spot" />
-            <div className="hero-inner">
-              <p data-reveal className="eyebrow">
-                福岡大学 法学部 3年
-              </p>
-              <h1 data-reveal style={{ '--reveal-delay': '80ms' }} className="name">
-                宮本琉太
-              </h1>
-              <p data-reveal style={{ '--reveal-delay': '140ms' }} className="name-latin">
-                Ryuta Miyamoto
-              </p>
-              <p data-reveal style={{ '--reveal-delay': '220ms' }} className="masthead-line">
-                身近な「分かりにくい」を、AIと技術で使いやすい形にする。
-              </p>
-              <ul data-reveal style={{ '--reveal-delay': '300ms' }} className="tags">
-                <li>
-                  <span className="tag tag--static">法学部 3年</span>
-                </li>
-                <li>
-                  <button type="button" className="tag">
-                    会社法ゼミ
-                  </button>
-                </li>
-                <li>
-                  <button type="button" className="tag">
-                    IT業界志望
-                  </button>
-                </li>
-              </ul>
-              <p data-reveal style={{ '--reveal-delay': '380ms' }} aria-hidden="true" className="scroll-hint">
-                Scroll
-              </p>
+          {/* ===== Hero ===== */}
+          <section className="hero">
+            <p className="hero-eyebrow" data-reveal>
+              福岡大学 法学部 3年
+            </p>
+            <h1 className="hero-name" data-reveal style={{ '--reveal-delay': '60ms' }}>
+              宮本 琉太
+            </h1>
+            <p className="hero-desc" data-reveal style={{ '--reveal-delay': '120ms' }}>
+              Web制作やサービス企画に取り組んでいます。
+              <br />
+              React / TypeScriptを使った開発や、AIを活用した企画・制作をしています。
+            </p>
+            <div className="hero-actions" data-reveal style={{ '--reveal-delay': '180ms' }}>
+              <a href="#work-oboeko" className="hero-link">
+                おぼえこ
+                <span className="arrow" aria-hidden="true" />
+              </a>
+              <a href="#work-machiquest" className="hero-link">
+                MachiQuest
+                <span className="arrow" aria-hidden="true" />
+              </a>
             </div>
           </section>
 
-          {/* ===== 01 About ===== */}
-          <section id="about" className="section">
+          {/* ===== 01 Key Results ===== */}
+          <section id="highlights" className="section">
             <div data-reveal className="section-head">
               <span aria-hidden="true" className="index">
                 01
               </span>
-              <h2>About Me</h2>
+              <h2>Key Results</h2>
             </div>
             <div className="section-body">
-              <p data-reveal style={{ '--reveal-delay': '80ms' }} className="lead">
-                福岡大学法学部法律学科で会社法を学びながら、AIやアプリ開発に取り組んでいます。法律を専攻していますが、AIを使って身近な課題を解決し、実際に動くサービスへ落とし込むことに興味を持ったことから、IT分野の学習を始めました。関心の根っこにあるのは「相手が動かない理由を決めつけず、興味を持てる入り口を設計して行動につなげる」という考え方です。歴史学研究会の勧誘の立て直しも、家庭教師での教え方も、暗記学習アプリ「おぼえこ」の開発も、この延長線上にあります。最近は、おぼえこを機能を絞って動くWeb版まで作りました。
-              </p>
-              <ul data-reveal style={{ '--reveal-delay': '150ms' }} className="fact-list">
-                <li>福岡大学 法学部 法律学科（2028年卒業見込み）</li>
-                <li>会社法を扱うゼミに所属</li>
-                <li>IT業界を志望。特に、AIを活用して新しい価値やサービスを生み出す仕事に関心がある</li>
-                <li>自由に挑戦でき、実行やアウトプットを重視する企業に魅力を感じている</li>
-              </ul>
+              <div data-reveal className="highlight-grid">
+                <div className="highlight-card">
+                  <span className="highlight-eyebrow">Webアプリ開発</span>
+                  <strong className="highlight-stat">おぼえこ</strong>
+                  <p>React / TypeScriptで学習アプリを開発</p>
+                </div>
+                <div className="highlight-card">
+                  <span className="highlight-eyebrow">新規事業企画</span>
+                  <strong className="highlight-stat">優秀賞</strong>
+                  <p>IT企業の1Dayインターンで新規事業を企画</p>
+                </div>
+                <div className="highlight-card">
+                  <span className="highlight-eyebrow">組織運営</span>
+                  <strong className="highlight-stat">約30人規模</strong>
+                  <p>歴史学研究会を現役部員一桁から立て直し</p>
+                </div>
+              </div>
             </div>
           </section>
 
-          {/* ===== 02 Skills ===== */}
-          <section id="skills" className="section">
+          {/* ===== 02 Featured Works ===== */}
+          <section id="work" className="section">
             <div data-reveal className="section-head">
               <span aria-hidden="true" className="index">
                 02
               </span>
-              <h2>Skills</h2>
+              <h2>Featured Works</h2>
             </div>
             <div className="section-body">
-              <p data-reveal style={{ '--reveal-delay': '80ms' }} className="section-note">
-                実際に触った深さで、3つに分けています。
-              </p>
-              <div data-reveal style={{ '--reveal-delay': '140ms' }} className="skill-tiers">
-                <div className="skill-tier">
-                  <span className="skill-tier-label">制作で使用</span>
-                  <ul className="chips">
-                    <li>HTML</li>
-                    <li>JavaScript</li>
-                    <li>TypeScript</li>
-                    <li>React</li>
-                    <li>Node.js</li>
-                    <li>Vite</li>
-                    <li>Expo</li>
-                    <li>ChatGPT</li>
-                    <li>Claude</li>
-                    <li>Codex</li>
-                    <li>Excel</li>
-                  </ul>
-                </div>
-                <div className="skill-tier">
-                  <span className="skill-tier-label">学習中</span>
-                  <ul className="chips">
-                    <li>Python</li>
-                    <li>GitHub（公開・運用は今後強化）</li>
-                  </ul>
-                </div>
-                <div className="skill-tier">
-                  <span className="skill-tier-label">使用経験あり</span>
-                  <ul className="chips">
-                    <li>Discord</li>
-                  </ul>
-                </div>
+              <div data-reveal className="featured-list">
+                {/* --- おぼえこ --- */}
+                <article id="work-oboeko" className="featured expandable">
+                  <div className="mock mock--oboeko" aria-hidden="true">
+                    <div className="mock-topbar">
+                      <span />
+                      <span />
+                      <span />
+                    </div>
+                    <div className="mock-oboeko-body">
+                      <div className="mock-oboeko-header">
+                        <span className="mock-seal">憶</span>おぼえこ
+                      </div>
+                      <div className="mock-oboeko-strip">
+                        今日 4<span>/10</span>
+                      </div>
+                      <div className="mock-oboeko-cards">
+                        <div className="mock-deck" style={{ '--c': '#8a3324' }}>
+                          <span>01</span>会社法 判例
+                        </div>
+                        <div className="mock-deck" style={{ '--c': '#3f5d47' }}>
+                          <span>02</span>サンプル：一般常識
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="featured-body">
+                    <div className="featured-top">
+                      <span className="featured-no">01</span>
+                      <h3>おぼえこ</h3>
+                      <span className="status-pill">Web版 公開中</span>
+                    </div>
+                    <p className="featured-tagline">学習・暗記を支援するWebアプリ</p>
+                    <dl className="featured-facts">
+                      <div>
+                        <dt>課題</dt>
+                        <dd>紙の単語帳や既存アプリでは、自分の教材に合わせて問題を作りにくい。</dd>
+                      </div>
+                      <div>
+                        <dt>なぜ作ったか</dt>
+                        <dd>学生や資格受験者が、教材から自分で問題を作って繰り返し学べるアプリが欲しかった。</dd>
+                      </div>
+                      <div>
+                        <dt>どう解決したか</dt>
+                        <dd>
+                          デッキ管理・問題の手入力・確認モード（苦手なカードを優先出題、1日の目標と連続日数の記録）を持つWebアプリを制作。
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>担当</dt>
+                        <dd>企画・設計・実装を担当。</dd>
+                      </div>
+                    </dl>
+                    <p className="featured-tech">React / TypeScript / Vite（保存はブラウザ内、サーバー不要）</p>
+                    <div className="expandable-body">
+                      <div className="expandable-inner">
+                        <span className="featured-group-label">現在できること</span>
+                        <ul className="mini-list">
+                          <li>デッキの作成・編集・削除</li>
+                          <li>問題の手入力（表・裏・補足）</li>
+                          <li>苦手なカードを優先した確認モード</li>
+                          <li>1日の目標枚数と連続学習日数の記録</li>
+                          <li>学習データの書き出し・読み込み</li>
+                        </ul>
+                      </div>
+                    </div>
+                    <div className="featured-actions">
+                      <a
+                        className="btn btn--solid"
+                        href="https://oboeko.lolipop-now.app/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        アプリを見る
+                      </a>
+                      <button type="button" className="btn" data-toggle data-label="詳しく見る" aria-expanded="false">
+                        詳しく見る
+                      </button>
+                    </div>
+                  </div>
+                </article>
+
+                {/* --- MachiQuest --- */}
+                <article id="work-machiquest" className="featured expandable">
+                  <div className="mock mock--machiquest" aria-hidden="true">
+                    <div className="mock-topbar mock-topbar--dark">
+                      <span />
+                      <span />
+                      <span />
+                    </div>
+                    <div className="mock-mq-body">
+                      <p className="mock-mq-kicker">GMO PEPABO 1DAY INTERNSHIP ／ WORK2</p>
+                      <p className="mock-mq-title">個人店の集客 × ゲーミフィケーション</p>
+                      <p className="mock-mq-name">
+                        マチクエ
+                        <span>MACHI QUEST</span>
+                      </p>
+                      <ul className="mock-mq-icons">
+                        <li>クエスト</li>
+                        <li>経験値</li>
+                        <li>制覇マップ</li>
+                        <li>連続来街ボーナス</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div className="featured-body">
+                    <div className="featured-top">
+                      <span className="featured-no">02</span>
+                      <h3>MachiQuest</h3>
+                      <span className="status-pill status-pill--award">IT企業 1Dayインターン 優秀賞</span>
+                    </div>
+                    <p className="featured-tagline">個人店の集客とゲーミフィケーションを組み合わせた新規事業企画</p>
+                    <dl className="featured-facts">
+                      <div>
+                        <dt>想定顧客</dt>
+                        <dd>来街者の減少に悩む商店街・中心市街地の運営者（商店街振興組合、中心市街地活性化協議会、DMOなど）。</dd>
+                      </div>
+                      <div>
+                        <dt>課題</dt>
+                        <dd>
+                          集客施策がスタンプラリーなど単発で終わりやすい。新規の来街者数や再訪率を数字で示せない。毎回ゼロから準備する負担も大きい。
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>サービス概要</dt>
+                        <dd>
+                          LINEミニアプリで、来街者ひとりひとりに合わせた「今日のクエスト」をAIが生成。3〜4店舗を巡るルートを提示し、チェックインで来街データを可視化する。
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>差別化</dt>
+                        <dd>
+                          地図アプリやSNSのように「知っている店に行く」のではなく、「まだ知らない個人店に今日行かせる」設計。値引きではなく発見を軸にする。
+                        </dd>
+                      </div>
+                    </dl>
+                    <div className="expandable-body">
+                      <div className="expandable-inner">
+                        <div className="proj-group">
+                          <span className="featured-group-label">収益モデル</span>
+                          <p className="featured-detail-text">
+                            商店街振興組合などとの年間ライセンス契約を本命に、立ち上げ期のPoC受託、単店向けの成果報酬型を組み合わせる案。
+                          </p>
+                        </div>
+                        <div className="proj-group">
+                          <span className="featured-group-label">PoC案</span>
+                          <p className="featured-detail-text">鹿児島・天文館エリアで20〜30店舗×6〜8週間の実証実験を想定。</p>
+                        </div>
+                        <div className="proj-group">
+                          <span className="featured-group-label">KPI</span>
+                          <p className="featured-detail-text">
+                            クエスト開始率、チェックイン完遂率、1人あたり訪問店舗数、新規開拓率、再回遊率など。
+                          </p>
+                        </div>
+                        <div className="proj-group">
+                          <span className="featured-group-label">AI活用</span>
+                          <p className="featured-detail-text">
+                            利用者の好み・行動履歴と、店舗側の情報（来てほしい時間帯や特徴など）を掛け合わせ、個別のクエストとルートを自動生成する。
+                          </p>
+                        </div>
+                        <div className="proj-group">
+                          <span className="featured-group-label">担当</span>
+                          <p className="featured-detail-text">課題設定・顧客像・収益モデル・PoC設計までの立案を担当。</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="featured-actions">
+                      <a
+                        className="btn btn--solid"
+                        href="https://machiquest.lolipop-now.app/#who"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        詳しい企画書を見る
+                      </a>
+                      <button type="button" className="btn" data-toggle data-label="詳しく見る" aria-expanded="false">
+                        詳しく見る
+                      </button>
+                    </div>
+                  </div>
+                </article>
               </div>
-              <ul data-reveal style={{ '--reveal-delay': '200ms' }} className="mini-list skill-notes">
-                <li>Python は、条件分岐・繰り返し処理・入力処理・乱数を使った簡単なプログラムまで。</li>
-                <li>法律文書や判例を読み、要点を整理する力。</li>
-                <li>グループでの判例発表・質疑応答。</li>
-              </ul>
             </div>
           </section>
 
-          {/* ===== 03 Projects ===== */}
-          <section id="projects" className="section">
+          {/* ===== 03 Experience ===== */}
+          <section id="experience" className="section">
             <div data-reveal className="section-head">
               <span aria-hidden="true" className="index">
                 03
               </span>
-              <h2>Projects</h2>
+              <h2>Experience</h2>
             </div>
             <div className="section-body">
-              <p data-reveal style={{ '--reveal-delay': '80ms' }} className="section-note">
-                進行度合いはそれぞれ異なります。カードの「詳しく見る」で機能やこだわりを開けます。
-              </p>
-              <div data-reveal style={{ '--reveal-delay': '140ms' }} className="projects">
-                <article className="proj">
-                  <div className="proj-top">
-                    <span className="proj-no" aria-hidden="true">
-                      01
-                    </span>
-                    <div className="proj-headings">
-                      <h3 className="proj-title">暗記学習アプリ「おぼえこ」</h3>
-                      <span className="proj-status">Web版 制作</span>
-                    </div>
-                  </div>
-                  <p className="proj-summary">
-                    学生や資格受験者が、教材を見ながら問題を手で入力し、デッキにまとめて反復学習するためのアプリ。まず Web 版を制作し、機能を絞って動く形にした。
+              <div data-reveal className="exp-grid">
+                <article className="exp-card expandable">
+                  <h3>歴史学研究会</h3>
+                  <p className="exp-summary">
+                    現役部員が一桁まで減少していた研究会で、新歓企画や活動内容を見直しました。歴史初心者でも参加しやすいクイズ企画や史跡見学旅行などを実施し、登録・参加希望者を含め約30人規模まで拡大しました。
                   </p>
-                  <div className="proj-actions">
-                    <a
-                      className="proj-toggle proj-toggle--link"
-                      href="https://oboeko.lolipop-now.app/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      デモを開く
-                      <span className="proj-arrow" aria-hidden="true" />
-                    </a>
-                    <button type="button" className="proj-toggle" aria-expanded="false">
-                      詳しく見る
-                      <span className="proj-chevron" aria-hidden="true" />
-                    </button>
-                  </div>
-                  <div className="proj-detail">
-                    <div className="proj-detail-inner">
-                      <div className="proj-group">
-                        <span className="proj-group-label">作ったもの（Web版 v1）</span>
-                        <ul className="mini-list">
-                          <li>デッキの作成・編集・削除</li>
-                          <li>教材からの問題手入力（表・裏・補足、続けて追加）</li>
-                          <li>学習進捗（覚えた枚数）の記録と表示</li>
-                          <li>カードをめくって覚えたか確認するモード</li>
-                          <li>学習データのバックアップ（書き出し・読み込み）</li>
-                        </ul>
-                      </div>
-                      <div className="proj-group">
-                        <span className="proj-group-label">使用技術</span>
-                        <ul className="mini-list">
-                          <li>React / TypeScript / Vite</li>
-                          <li>保存はブラウザ内で完結（サーバー不要）</li>
-                        </ul>
-                      </div>
-                      <div className="proj-group">
-                        <span className="proj-group-label">これから</span>
-                        <ul className="mini-list">
-                          <li>写真やPDFからの問題作成</li>
-                          <li>SPIやCABなどへの対応</li>
-                          <li>解説付き問題演習</li>
-                          <li>1日の学習目標設定と達成時の演出</li>
-                          <li>スマホアプリ化とApp Storeでの公開</li>
-                        </ul>
-                      </div>
-                      <div className="proj-group">
-                        <span className="proj-group-label">こだわり</span>
-                        <ul className="mini-list">
-                          <li>AIが作ったような無機質なデザインを避ける</li>
-                          <li>日本の学生が直感的に使えるUIにする</li>
-                          <li>問題を解くだけでなく、理解につながる解説を付ける</li>
-                        </ul>
-                      </div>
+                  <ul className="exp-tags">
+                    <li>企画</li>
+                    <li>集客</li>
+                    <li>コミュニティ運営</li>
+                    <li>チーム運営</li>
+                  </ul>
+                  <div className="expandable-body">
+                    <div className="expandable-inner">
+                      <p className="featured-detail-text">
+                        当初は約5人まで減り、研究発表中心の活動が新入生には堅く見えていた。歴史クイズを企画し、もともとあった史跡見学を新入生向けの体験企画として活用しながら、参加者の反応やアンケートをもとに改善を重ねた。
+                      </p>
+                      <ul className="mini-list">
+                        <li>歴史クイズを企画し、参加者の反応を見ながら形式を改善</li>
+                        <li>既存の史跡見学を、新入生が入部前に体験できる企画として活用</li>
+                        <li>QRコード経由のアンケートで参加理由や反応を確認</li>
+                        <li>史跡見学の申込みから入部までの導線を設計</li>
+                      </ul>
+                      <p className="featured-detail-text">
+                        自分たちが良いと思うものを押し出すだけでなく、相手が参加しづらい理由を考え、実際の反応をもとに改善する重要性を学んだ。
+                      </p>
                     </div>
                   </div>
-                </article>
-
-                <article className="proj">
-                  <div className="proj-top">
-                    <span className="proj-no" aria-hidden="true">
-                      02
-                    </span>
-                    <div className="proj-headings">
-                      <h3 className="proj-title">TOEIC英単語学習ツール</h3>
-                      <span className="proj-status">制作</span>
-                    </div>
-                  </div>
-                  <p className="proj-summary">
-                    Excelなどを活用し、英単語を反復して学習できる仕組みを制作。自分の学習上の不便を出発点に、覚えやすさと継続しやすさを考えた。
-                  </p>
-                </article>
-
-                <article className="proj">
-                  <div className="proj-top">
-                    <span className="proj-no" aria-hidden="true">
-                      03
-                    </span>
-                    <div className="proj-headings">
-                      <h3 className="proj-title">配信支援アプリ</h3>
-                      <span className="proj-status">試作</span>
-                    </div>
-                  </div>
-                  <p className="proj-summary">
-                    ニコニコ生放送などの配信を想定し、コメントやギフトのランキングを表示するアプリを試作。Node.jsを利用し、ローカル環境での動作確認に取り組んだ。
-                  </p>
-                </article>
-
-                <article className="proj">
-                  <div className="proj-top">
-                    <span className="proj-no" aria-hidden="true">
-                      04
-                    </span>
-                    <div className="proj-headings">
-                      <h3 className="proj-title">大学授業・単位案内Bot</h3>
-                      <span className="proj-status">構想</span>
-                    </div>
-                  </div>
-                  <p className="proj-summary">
-                    大学の学修ガイドを読み込ませ、授業・単位・履修などに関する質問へ回答するBotを構想。大量の資料から必要な情報へアクセスしやすくすることを目的としている。
-                  </p>
-                </article>
-
-                <article className="proj">
-                  <div className="proj-top">
-                    <span className="proj-no" aria-hidden="true">
-                      05
-                    </span>
-                    <div className="proj-headings">
-                      <h3 className="proj-title">法学部学生向けDiscordコミュニティ</h3>
-                      <span className="proj-status">設計</span>
-                    </div>
-                  </div>
-                  <p className="proj-summary">
-                    法学部の学生が、授業情報や過去問、大学生活に関する情報を共有できるコミュニティを設計。
-                  </p>
-                  <button type="button" className="proj-toggle" aria-expanded="false">
+                  <button type="button" className="exp-toggle" data-toggle data-label="詳しく見る" aria-expanded="false">
                     詳しく見る
-                    <span className="proj-chevron" aria-hidden="true" />
                   </button>
-                  <div className="proj-detail">
-                    <div className="proj-detail-inner">
-                      <div className="proj-group">
-                        <span className="proj-group-label">設計している内容</span>
-                        <ul className="mini-list">
-                          <li>授業別チャンネルの整理</li>
-                          <li>自己紹介の導線作成</li>
-                          <li>過去問共有のルール設計</li>
-                          <li>学内システムへのリンク整理</li>
-                          <li>イベント管理機能の検討</li>
-                          <li>安心して利用するための規則作成</li>
-                        </ul>
-                      </div>
+                </article>
+
+                <article className="exp-card expandable">
+                  <h3>家庭教師</h3>
+                  <p className="exp-summary">
+                    生徒が解けない原因を「理解力不足」と決めつけず、どこでつまずいているのかを確認して伝え方を変えてきました。
+                  </p>
+                  <ul className="exp-tags">
+                    <li>指導</li>
+                    <li>コミュニケーション</li>
+                  </ul>
+                  <div className="expandable-body">
+                    <div className="expandable-inner">
+                      <p className="featured-detail-text">
+                        英語の前置詞でつまずいていた生徒には、本人が読んでいた漫画の英題（Attack on Titan）を例に、on
+                        が持つ「〜への」というニュアンスを説明するなど、相手が興味を持てる題材に置き換えて伝えることを意識してきた。
+                      </p>
                     </div>
                   </div>
+                  <button type="button" className="exp-toggle" data-toggle data-label="詳しく見る" aria-expanded="false">
+                    詳しく見る
+                  </button>
+                </article>
+
+                <article className="exp-card expandable">
+                  <h3>会社法ゼミ</h3>
+                  <p className="exp-summary">
+                    会社法の判例を2〜3人のグループで調査し発表。株主総会や取締役会の役割、取締役の責任などを学んでいます。
+                  </p>
+                  <ul className="exp-tags">
+                    <li>法律</li>
+                    <li>リサーチ</li>
+                    <li>プレゼン</li>
+                  </ul>
+                  <div className="expandable-body">
+                    <div className="expandable-inner">
+                      <p className="featured-detail-text">
+                        中でも印象に残っているのは、会社の政治献金が目的の範囲に含まれるかが争われた八幡製鉄政治献金事件で、企業活動は利益の追求だけでなく社会との関係の中でも考える必要があることを学んだ。質疑応答を通じて、根拠を示しながら説明する力を磨いている。
+                      </p>
+                    </div>
+                  </div>
+                  <button type="button" className="exp-toggle" data-toggle data-label="詳しく見る" aria-expanded="false">
+                    詳しく見る
+                  </button>
+                </article>
+
+                <article className="exp-card expandable">
+                  <h3>インターン・企業研究</h3>
+                  <p className="exp-summary">
+                    GMOペパボなどのインターン・企業研究に参加。新規事業の企画・提案を経験しました（詳しくは
+                    <a href="#work-machiquest">MachiQuest</a>を参照）。
+                  </p>
+                  <ul className="exp-tags">
+                    <li>企業研究</li>
+                    <li>新規事業</li>
+                  </ul>
+                  <div className="expandable-body">
+                    <div className="expandable-inner">
+                      <ul className="companies">
+                        <li>GMOペパボ</li>
+                        <li>かんぽシステムソリューションズ</li>
+                        <li>さくら情報システム</li>
+                        <li>九州電力</li>
+                        <li>福岡銀行</li>
+                        <li>GMOインターネットグループ関連イベント</li>
+                      </ul>
+                      <p className="featured-detail-text">
+                        参加・研究した企業。参加を通して、AIによる業務効率化だけでなく、空いた時間を新しい提案や顧客対応へ振り向ける考え方に関心を持った。
+                      </p>
+                    </div>
+                  </div>
+                  <button type="button" className="exp-toggle" data-toggle data-label="詳しく見る" aria-expanded="false">
+                    詳しく見る
+                  </button>
                 </article>
               </div>
             </div>
           </section>
 
-          {/* ===== 04 Experience ===== */}
-          <section id="experience" className="section">
+          {/* ===== 04 Other Works ===== */}
+          <section id="other-works" className="section">
             <div data-reveal className="section-head">
               <span aria-hidden="true" className="index">
                 04
               </span>
-              <h2>Experience</h2>
+              <h2>Other Works</h2>
             </div>
             <div className="section-body">
-              <ul data-reveal style={{ '--reveal-delay': '80ms' }} className="exp-list">
-                <li className="exp-item">
-                  <h3 className="exp-role">家庭教師</h3>
-                  <p className="exp-body">
-                    生徒が解けない原因を「理解力不足」と決めつけず、どこでつまずいているのかを確認。英語の前置詞でつまずいていた生徒には、本人が読んでいた漫画の英題（Attack on Titan）を例に、on が持つ「〜への」というニュアンスを説明するなど、相手が興味を持てる題材に置き換えて伝えることを意識してきた。
-                  </p>
-                </li>
-                <li className="exp-item">
-                  <h3 className="exp-role">歴史学研究会</h3>
-                  <p className="exp-body">
-                    当初は約5人まで減り、研究発表中心の活動が新入生には堅く見えていた歴史学研究会。歴史クイズを企画し、もともとあった史跡見学を新入生向けの体験企画として活用しながら、参加者の反応やアンケートをもとに改善を重ねた。
-                  </p>
-                  <ul className="mini-list">
-                    <li>歴史クイズを企画し、参加者の反応を見ながら形式を改善</li>
-                    <li>既存の史跡見学を、新入生が入部前に体験できる企画として活用</li>
-                    <li>QRコード経由のアンケートで参加理由や反応を確認</li>
-                    <li>史跡見学の申込みから入部までの導線を設計</li>
-                  </ul>
-                  <p className="exp-body">
-                    結果として所属者は約30人規模まで増加。自分たちが良いと思うものを押し出すだけでなく、相手が参加しづらい理由を考え、実際の反応をもとに改善する重要性を学んだ。
-                  </p>
-                </li>
-                <li className="exp-item">
-                  <h3 className="exp-role">会社法ゼミ</h3>
-                  <p className="exp-body">
-                    株主総会や取締役会の役割、取締役の責任など会社法の判例を2〜3人のグループで調査し発表。中でも印象に残っているのは、会社の政治献金が目的の範囲に含まれるかが争われた八幡製鉄政治献金事件で、企業活動は利益の追求だけでなく社会との関係の中でも考える必要があることを学んだ。質疑応答を通じて、根拠を示しながら説明する力を磨いている。
-                  </p>
-                </li>
-                <li className="exp-item">
-                  <h3 className="exp-role">インターン・企業研究</h3>
-                  <ul className="companies">
-                    <li>GMOペパボ</li>
-                    <li>かんぽシステムソリューションズ</li>
-                    <li>さくら情報システム</li>
-                    <li>九州電力</li>
-                    <li>福岡銀行</li>
-                    <li>GMOインターネットグループ関連イベント</li>
-                  </ul>
-                  <p className="exp-body">
-                    参加・研究した企業。あるIT企業のインターンでは、地域の個人店が抱える集客の課題に着目し、街歩きとゲーミフィケーションを組み合わせたサービスを企画。利用者だけでなく店舗や運営者の視点でも課題を整理し、対象顧客・収益モデル・実証方法まで具体化して、着眼点と完成度を評価され優秀賞をいただいた。一連の参加を通して、AIによる業務効率化だけでなく、空いた時間を新しい提案や顧客対応へ振り向ける考え方に関心を持ち、完成度を上げてから動くのではなく、まず実行して改善を重ねる姿勢を大切にしたいと考えるようになった。
-                  </p>
-                  <a
-                    className="exp-link"
-                    href="https://machiquest.lolipop-now.app/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    企画書「MachiQuest」を見る
-                    <span className="proj-arrow" aria-hidden="true" />
-                  </a>
-                </li>
-              </ul>
+              <p data-reveal className="section-note">
+                その他の制作・構想。進行度合いはそれぞれ異なります。
+              </p>
+              <div data-reveal className="other-grid">
+                <article className="other-card">
+                  <div className="other-top">
+                    <h3>TOEIC英単語学習ツール</h3>
+                    <span className="status-pill status-pill--sm">Prototype</span>
+                  </div>
+                  <p>Excelを使って英単語を反復学習できる仕組みを制作。自分の学習の不便を出発点にした個人用ツール。</p>
+                </article>
+                <article className="other-card">
+                  <div className="other-top">
+                    <h3>配信支援アプリ</h3>
+                    <span className="status-pill status-pill--sm">Experiment</span>
+                  </div>
+                  <p>ニコニコ生放送などを想定し、コメントやギフトのランキングを表示する試作。Node.jsでローカル動作を確認。</p>
+                </article>
+                <article className="other-card">
+                  <div className="other-top">
+                    <h3>大学授業・単位案内Bot</h3>
+                    <span className="status-pill status-pill--sm">Concept</span>
+                  </div>
+                  <p>大学の学修ガイドを読み込ませ、授業や単位に関する質問に答えるBotの構想。</p>
+                </article>
+                <article className="other-card">
+                  <div className="other-top">
+                    <h3>法学部学生向けDiscordコミュニティ</h3>
+                    <span className="status-pill status-pill--sm">Concept</span>
+                  </div>
+                  <p>法学部の学生が授業情報や過去問を共有できるコミュニティの設計。</p>
+                </article>
+              </div>
             </div>
           </section>
 
-          {/* ===== 05 Strengths ===== */}
-          <section id="strengths" className="section">
+          {/* ===== 05 Skills ===== */}
+          <section id="skills" className="section">
             <div data-reveal className="section-head">
               <span aria-hidden="true" className="index">
                 05
               </span>
-              <h2>Strengths</h2>
+              <h2>Skills</h2>
             </div>
             <div className="section-body">
-              <div data-reveal style={{ '--reveal-delay': '80ms' }} className="grid">
-                <div className="card">
-                  <h3>相手が動かない理由を決めつけない</h3>
-                  <p>
-                    家庭教師では、生徒が解けない原因を「理解力不足」と決めつけず、どこでつまずいているのかを確認した。英語の前置詞でつまずいていた生徒には、読んでいた漫画の英題を例にするなど、相手が興味を持てる題材に置き換えることを意識してきた。
-                  </p>
+              <div data-reveal className="skill-groups">
+                <div className="skill-group">
+                  <h3>Frontend</h3>
+                  <ul className="chips">
+                    <li>React</li>
+                    <li>TypeScript</li>
+                    <li>JavaScript</li>
+                    <li>HTML</li>
+                    <li>CSS</li>
+                    <li>Vite</li>
+                  </ul>
+                  <p className="skill-use">WebアプリのUI設計・実装に使用。</p>
                 </div>
-                <div className="card">
-                  <h3>組織の課題を発見し、立て直せる</h3>
-                  <p>
-                    約5人まで減っていた歴史学研究会で、歴史クイズを企画し、もともとあった史跡見学を新入生向けに活用。反応やアンケートをもとに改善を重ね、約30人規模まで増やすことができた。
-                  </p>
+                <div className="skill-group">
+                  <h3>AI-assisted Development</h3>
+                  <ul className="chips">
+                    <li>ChatGPT</li>
+                    <li>Claude</li>
+                    <li>Codex</li>
+                  </ul>
+                  <p className="skill-use">企画整理、仕様作成、実装補助、デバッグ、アイデア検証などに活用。</p>
                 </div>
-                <div className="card">
-                  <h3>課題を見つけ、動く形にできる</h3>
-                  <p>
-                    IT企業のインターンでは、個人店の集客課題に街歩き×ゲーミフィケーションのサービスを企画し、優秀賞をいただいた。学習アプリ「おぼえこ」も、自分の「覚えにくい」を出発点にWeb版まで作った。AIは道具として使い、目的や利用者像は自分で考えている。
-                  </p>
+                <div className="skill-group">
+                  <h3>Prototype / Other</h3>
+                  <ul className="chips">
+                    <li>Python</li>
+                    <li>Node.js</li>
+                    <li>Expo</li>
+                    <li>Excel</li>
+                  </ul>
+                  <p className="skill-use">小規模なツールやアプリの試作に使用。</p>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* ===== 06 Career Vision ===== */}
-          <section id="vision" className="section">
+          {/* ===== 06 About ===== */}
+          <section id="about" className="section">
             <div data-reveal className="section-head">
               <span aria-hidden="true" className="index">
                 06
               </span>
-              <h2>Career Vision</h2>
+              <h2>About</h2>
             </div>
             <div className="section-body">
-              <ul data-reveal style={{ '--reveal-delay': '80ms' }} className="next-list">
-                <li>IT業界を志望しています。特に、AIを活用して新しい価値やサービスを生み出す仕事に関心があります。</li>
-                <li>自由に挑戦でき、実行やアウトプットを重視する企業に魅力を感じています。</li>
+              <ul data-reveal className="fact-list">
+                <li>福岡大学 法学部（会社法ゼミ）</li>
+                <li>Web制作やサービス企画に取り組んでいる</li>
+                <li>大学では歴史学研究会の活動にも参加</li>
+                <li>技術だけでなく、企画やユーザー体験にも関心がある</li>
               </ul>
-              <p data-reveal style={{ '--reveal-delay': '150ms' }} className="section-note vision-note">
-                大切にしている考え方
+              <p data-reveal className="about-note">
+                IT業界を志望していて、まず手を動かして試すことを大事にしている。
               </p>
-              <ul data-reveal style={{ '--reveal-delay': '190ms' }} className="mini-list">
-                <li>まず小さく作り、試しながら改善する</li>
-                <li>AIを単なる時短ではなく、新しい価値を生み出すために使う</li>
-                <li>利用者がどこで困るかを具体的に考える</li>
-                <li>専門知識のない人にも分かる形に整理する</li>
-                <li>興味を持ったことを、実際に動く成果物へ変える</li>
-              </ul>
             </div>
           </section>
 
@@ -634,16 +638,16 @@ export default function Home() {
               <h2>Contact</h2>
             </div>
             <div className="section-body">
-              <p data-reveal style={{ '--reveal-delay': '80ms' }} className="section-note">
+              <p data-reveal className="section-note">
                 連絡はメールでお願いします。
               </p>
-              <div data-reveal style={{ '--reveal-delay': '140ms' }} className="contact-box">
+              <div data-reveal className="contact-box">
                 <span className="contact-addr">{EMAIL}</span>
                 <div className="contact-actions">
                   <a href={`mailto:${EMAIL}`} className="btn btn--solid">
                     メールを書く
                   </a>
-                  <button type="button" className="btn">
+                  <button type="button" className="btn" data-copy>
                     アドレスをコピー
                   </button>
                 </div>
