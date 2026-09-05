@@ -193,8 +193,8 @@ export default function Home() {
           name="description"
           content="宮本琉太（福岡大学 法学部 3年）のポートフォリオ。会社法を学びながら、AIを活用したアプリ開発（暗記学習アプリなど）に取り組む学生。強み・制作実績・経験・志望をまとめています。"
         />
-        <meta name="theme-color" content="#0b0d10" />
-        <meta name="color-scheme" content="dark" />
+        <meta name="theme-color" content="#f6f7f8" />
+        <meta name="color-scheme" content="light" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <meta property="og:type" content="website" />
         <meta property="og:title" content="宮本琉太 | 福岡大学 法学部 3年" />

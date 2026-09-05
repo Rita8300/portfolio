@@ -1,15 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap');
 :root {
-  --bg: #0b0d10;
-  --surface: #14171c;
-  --surface-2: #171b22;
-  --border: rgba(255, 255, 255, 0.1);
-  --border-soft: rgba(255, 255, 255, 0.06);
-  --text: #f2f4f7;
-  --text-strong: #e2e6ea;
-  --text-dim: #b9c0c9;
-  --accent: #38e1c8;
-  --ring: rgba(56, 225, 200, 0.55);
+  --bg: #f6f7f8;
+  --surface: #ffffff;
+  --surface-2: #eef1f3;
+  --border: rgba(18, 22, 26, 0.12);
+  --border-soft: rgba(18, 22, 26, 0.07);
+  --text: #12161a;
+  --text-strong: #1c2126;
+  --text-dim: #4b5563;
+  --accent: #115e59;
+  --accent-hover: #0b4744;
+  --accent-rgb: 17, 94, 89;
+  --on-accent: #ffffff;
+  --ring: rgba(17, 94, 89, 0.4);
   --maxw: 1120px;
   --pad: clamp(20px, 6vw, 76px);
 }
@@ -66,8 +69,8 @@ main:focus {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(90vw 90vw at 88% -30%, rgba(56, 225, 200, 0.15), transparent 78%),
-    radial-gradient(80vw 80vw at -22% 126%, rgba(56, 225, 200, 0.07), transparent 78%);
+  background: radial-gradient(90vw 90vw at 88% -30%, rgba(var(--accent-rgb), 0.12), transparent 78%),
+    radial-gradient(80vw 80vw at -22% 126%, rgba(var(--accent-rgb), 0.06), transparent 78%);
 }
 .cover.is-open {
   opacity: 0;
@@ -93,7 +96,6 @@ main:focus {
   line-height: 1;
   letter-spacing: 0.05em;
   margin: 0;
-  text-shadow: 0 0 60px rgba(56, 225, 200, 0.16);
 }
 .cover-cta {
   display: inline-flex;
@@ -142,7 +144,7 @@ main:focus {
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, var(--accent), #8af4e2);
+  background: linear-gradient(90deg, var(--accent), var(--accent-hover));
   transform-origin: left;
   transform: scaleX(0);
   z-index: 20;
@@ -221,8 +223,8 @@ main:focus {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: radial-gradient(85vw 85vw at 92% -28%, rgba(56, 225, 200, 0.11), transparent 76%),
-    radial-gradient(78vw 78vw at -20% 128%, rgba(56, 225, 200, 0.05), transparent 76%);
+  background: radial-gradient(85vw 85vw at 92% -28%, rgba(var(--accent-rgb), 0.08), transparent 76%),
+    radial-gradient(78vw 78vw at -20% 128%, rgba(var(--accent-rgb), 0.04), transparent 76%);
 }
 main,
 .topbar,
@@ -252,13 +254,13 @@ main,
   text-decoration: none;
   color: var(--accent);
   padding-bottom: 3px;
-  border-bottom: 1px solid rgba(56, 225, 200, 0.45);
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.45);
   white-space: nowrap;
   transition: border-color 0.2s ease, color 0.2s ease;
 }
 .topbar-link:hover {
-  color: #8af4e2;
-  border-color: #8af4e2;
+  color: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 .masthead {
   position: relative;
@@ -274,7 +276,7 @@ main,
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.4s ease;
-  background: radial-gradient(280px 280px at var(--mx, 50%) var(--my, 50%), rgba(56, 225, 200, 0.16), transparent 70%);
+  background: radial-gradient(280px 280px at var(--mx, 50%) var(--my, 50%), rgba(var(--accent-rgb), 0.1), transparent 70%);
 }
 .hero-inner {
   position: relative;
@@ -293,7 +295,6 @@ main,
   line-height: 1.04;
   letter-spacing: 0.03em;
   margin: 0;
-  text-shadow: 0 0 44px rgba(56, 225, 200, 0.12);
 }
 .name-latin {
   font-family: 'Space Grotesk', sans-serif;
@@ -334,7 +335,7 @@ main,
   transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease, transform 0.2s ease;
 }
 button.tag:hover {
-  color: var(--bg);
+  color: var(--on-accent);
   background: var(--accent);
   border-color: var(--accent);
   transform: translateY(-2px);
@@ -399,7 +400,7 @@ button.tag:hover {
   bottom: 0;
   height: 1px;
   width: 100%;
-  background: linear-gradient(90deg, var(--accent), rgba(56, 225, 200, 0) 62%);
+  background: linear-gradient(90deg, var(--accent), rgba(var(--accent-rgb), 0) 62%);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) 0.15s;
@@ -413,7 +414,7 @@ button.tag:hover {
   font-weight: 700;
   line-height: 1;
   color: transparent;
-  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.22);
+  -webkit-text-stroke: 1px rgba(18, 22, 26, 0.18);
   flex: none;
 }
 .section-head h2 {
@@ -516,7 +517,7 @@ button.tag:hover {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 7px 13px;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(18, 22, 26, 0.03);
 }
 .mini-list {
   list-style: none;
@@ -556,7 +557,7 @@ button.tag:hover {
   transition: border-color 0.25s ease;
 }
 .proj:hover {
-  border-color: rgba(56, 225, 200, 0.35);
+  border-color: rgba(var(--accent-rgb), 0.4);
 }
 .proj-top {
   display: flex;
@@ -609,7 +610,7 @@ button.tag:hover {
   letter-spacing: 0.06em;
   color: var(--accent);
   background: transparent;
-  border: 1px solid rgba(56, 225, 200, 0.4);
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
   border-radius: 999px;
   padding: 8px 16px;
   cursor: pointer;
@@ -617,7 +618,7 @@ button.tag:hover {
 }
 .proj-toggle:hover {
   background: var(--accent);
-  color: #06251f;
+  color: var(--on-accent);
 }
 .proj-chevron {
   width: 7px;
@@ -642,13 +643,13 @@ button.tag:hover {
 .proj-toggle--link {
   background: var(--accent);
   border-color: var(--accent);
-  color: #06251f;
+  color: var(--on-accent);
   text-decoration: none;
 }
 .proj-toggle--link:hover {
-  background: #8af4e2;
-  border-color: #8af4e2;
-  color: #06251f;
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: var(--on-accent);
 }
 .proj-arrow {
   width: 7px;
@@ -715,12 +716,12 @@ button.tag:hover {
   text-decoration: none;
   color: var(--accent);
   padding-bottom: 2px;
-  border-bottom: 1px solid rgba(56, 225, 200, 0.4);
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.4);
   transition: border-color 0.2s ease, color 0.2s ease;
 }
 .exp-link:hover {
-  color: #8af4e2;
-  border-color: #8af4e2;
+  color: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 .companies {
   list-style: none;
@@ -758,7 +759,7 @@ button.tag:hover {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: radial-gradient(180px 180px at var(--gx, 50%) var(--gy, 50%), rgba(255, 255, 255, 0.06), transparent 60%);
+  background: radial-gradient(180px 180px at var(--gx, 50%) var(--gy, 50%), rgba(18, 22, 26, 0.05), transparent 60%);
   opacity: 0;
   transition: opacity 0.25s ease;
   pointer-events: none;
@@ -776,7 +777,7 @@ button.tag:hover {
   transition: opacity 0.25s ease;
 }
 .card:hover {
-  border-color: rgba(56, 225, 200, 0.5);
+  border-color: rgba(var(--accent-rgb), 0.55);
 }
 .card:hover::before,
 .card:hover::after {
@@ -841,12 +842,12 @@ button.tag:hover {
 .btn--solid {
   background: var(--accent);
   border-color: var(--accent);
-  color: #06251f;
+  color: var(--on-accent);
   font-weight: 700;
 }
 .btn--solid:hover {
-  background: #8af4e2;
-  border-color: #8af4e2;
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 .footer {
   max-width: var(--maxw);
@@ -869,8 +870,8 @@ button.tag:hover {
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  border: 1px solid var(--ring);
-  background: rgba(11, 13, 16, 0.82);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.86);
   color: var(--accent);
   font-size: 1.1rem;
   cursor: pointer;
@@ -880,6 +881,7 @@ button.tag:hover {
   pointer-events: none;
   transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s ease;
   backdrop-filter: blur(6px);
+  box-shadow: 0 6px 20px rgba(18, 22, 26, 0.12);
 }
 .totop.is-on {
   opacity: 1;
@@ -888,7 +890,7 @@ button.tag:hover {
 }
 .totop:hover {
   background: var(--accent);
-  color: #06251f;
+  color: var(--on-accent);
 }
 .toast {
   position: fixed;
@@ -904,7 +906,7 @@ button.tag:hover {
   padding: 10px 18px;
   border-radius: 999px;
   background: var(--accent);
-  color: #06251f;
+  color: var(--on-accent);
   font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 0.03em;
