@@ -69,14 +69,31 @@ export default function Home() {
     }
 
     // --- 開閉トグル（Featured Works / Experience 共通） ---
+    // 閉じた内容は hidden 属性でアクセシビリティツリーから外す。
+    // 開くときは即座に hidden を外してからアニメーションし、閉じるときは
+    // アニメーションが終わってから hidden を付ける（見た目のアニメーションを切らないため）。
+    const hideTimers = new WeakMap();
     doc.querySelectorAll('[data-toggle]').forEach((btn) => {
+      const wrap = btn.closest('.expandable');
+      const body = wrap ? wrap.querySelector('.expandable-body') : null;
       on(btn, 'click', () => {
-        const wrap = btn.closest('.expandable');
         if (!wrap) return;
         const open = wrap.classList.toggle('is-open');
         btn.setAttribute('aria-expanded', open ? 'true' : 'false');
         const label = btn.querySelector('.toggle-label');
         if (label) label.textContent = open ? '閉じる' : btn.dataset.label || '詳しく見る';
+        if (body) {
+          const prevTimer = hideTimers.get(body);
+          if (prevTimer) clearTimeout(prevTimer);
+          if (open) {
+            body.hidden = false;
+          } else {
+            const t = setTimeout(() => {
+              body.hidden = true;
+            }, prefersReduced ? 0 : 420);
+            hideTimers.set(body, t);
+          }
+        }
       });
     });
 
@@ -221,9 +238,9 @@ export default function Home() {
             <div className="section-body">
               <div className="highlight-grid">
                 <div className="highlight-card" data-reveal>
-                  <span className="highlight-eyebrow">Webアプリ開発</span>
-                  <strong className="highlight-stat">おぼえこ</strong>
-                  <p>React / TypeScriptで学習アプリを開発</p>
+                  <span className="highlight-eyebrow">個人開発</span>
+                  <strong className="highlight-stat">Web版 公開中</strong>
+                  <p>おぼえこの企画からUI設計・実装・公開まで担当</p>
                 </div>
                 <div className="highlight-card" data-reveal style={{ '--reveal-delay': '90ms' }}>
                   <span className="highlight-eyebrow">新規事業企画</span>
@@ -261,15 +278,35 @@ export default function Home() {
                       <div className="mock-oboeko-header">
                         <span className="mock-seal">憶</span>おぼえこ
                       </div>
-                      <div className="mock-oboeko-strip">
-                        今日 4<span>/10</span>
-                      </div>
-                      <div className="mock-oboeko-cards">
-                        <div className="mock-deck" style={{ '--c': '#8a3324' }}>
-                          <span>01</span>会社法 判例
+                      <div className="mock-flow">
+                        <div className="mock-step">
+                          <span className="mock-step-label">1. デッキを選ぶ</span>
+                          <div className="mock-oboeko-cards">
+                            <div className="mock-deck" style={{ '--c': '#8a3324' }}>
+                              <span>01</span>会社法 判例
+                            </div>
+                            <div className="mock-deck" style={{ '--c': '#3f5d47' }}>
+                              <span>02</span>サンプル：一般常識
+                            </div>
+                          </div>
                         </div>
-                        <div className="mock-deck" style={{ '--c': '#3f5d47' }}>
-                          <span>02</span>サンプル：一般常識
+                        <div className="mock-step">
+                          <span className="mock-step-label">2. カードで確認する</span>
+                          <div className="mock-flashcard">
+                            <span className="mock-flashcard-label">もんだい</span>
+                            <span className="mock-flashcard-text">取締役の善管注意義務とは？</span>
+                            <div className="mock-flashcard-actions">
+                              <span>まだ</span>
+                              <span className="is-primary">覚えた</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mock-step">
+                          <span className="mock-step-label">3. 結果を確認する</span>
+                          <div className="mock-oboeko-strip">
+                            今日 4<span>/10</span>
+                          </div>
+                          <p className="mock-result">3枚中2枚を「覚えた」に</p>
                         </div>
                       </div>
                     </div>
@@ -280,38 +317,61 @@ export default function Home() {
                       <h3>おぼえこ</h3>
                       <span className="status-pill">Web版 公開中</span>
                     </div>
-                    <p className="featured-tagline">学習・暗記を支援するWebアプリ</p>
+                    <ul className="featured-meta">
+                      <li>個人開発</li>
+                      <li>企画・UI設計・実装</li>
+                      <li>継続改善中</li>
+                    </ul>
+                    <p className="featured-tagline">自分の教材を、一問一答で繰り返せる暗記学習アプリ</p>
                     <dl className="featured-facts">
                       <div>
-                        <dt>課題</dt>
-                        <dd>紙の単語帳や既存アプリでは、自分の教材に合わせて問題を作りにくい。</dd>
-                      </div>
-                      <div>
-                        <dt>なぜ作ったか</dt>
-                        <dd>学生や資格受験者が、教材から自分で問題を作って繰り返し学べるアプリが欲しかった。</dd>
-                      </div>
-                      <div>
-                        <dt>どう解決したか</dt>
+                        <dt>背景</dt>
                         <dd>
-                          デッキ管理・問題の手入力・確認モード（苦手なカードを優先出題、1日の目標と連続日数の記録）を持つWebアプリを制作。
+                          授業や資格勉強で覚えたい内容を、紙へ書き直したり、復習する範囲を毎回選んだりする手間を減らすために制作しました。
                         </dd>
                       </div>
                       <div>
-                        <dt>担当</dt>
-                        <dd>企画・設計・実装を担当。</dd>
+                        <dt>設計した体験</dt>
+                        <dd>
+                          覚えたい内容をデッキに分け、問題・答え・補足を登録できます。確認モードでは未習得・苦手なカードを優先し、その日の学習量や連続学習日数も記録できるようにしました。
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>実装上の工夫</dt>
+                        <dd>
+                          ReactとTypeScriptで画面と状態を設計しています。学習データは端末内へ保存し、JSONによるバックアップと復元にも対応しています。
+                        </dd>
                       </div>
                     </dl>
                     <p className="featured-tech">React / TypeScript / Vite（保存はブラウザ内、サーバー不要）</p>
-                    <div className="expandable-body">
+                    <div id="oboeko-detail" className="expandable-body" hidden>
                       <div className="expandable-inner">
-                        <span className="featured-group-label">現在できること</span>
-                        <ul className="mini-list">
-                          <li>デッキの作成・編集・削除</li>
-                          <li>問題の手入力（表・裏・補足）</li>
-                          <li>苦手なカードを優先した確認モード</li>
-                          <li>1日の目標枚数と連続学習日数の記録</li>
-                          <li>学習データの書き出し・読み込み</li>
-                        </ul>
+                        <div className="proj-group">
+                          <span className="featured-group-label">主な機能</span>
+                          <ul className="mini-list">
+                            <li>デッキの作成・編集・削除</li>
+                            <li>問題の手入力（表・裏・補足）</li>
+                            <li>苦手なカードを優先した確認モード</li>
+                            <li>1日の目標枚数と連続学習日数の記録</li>
+                            <li>学習データの書き出し・読み込み（JSON）</li>
+                          </ul>
+                        </div>
+                        <div className="proj-group">
+                          <span className="featured-group-label">設計・実装上の判断</span>
+                          <ul className="mini-list">
+                            <li>復習の優先度は間隔反復（SRS）の日付計算ではなく、間違えた回数をもとにしたシンプルな並び替えにとどめている</li>
+                            <li>学習データは外部に送らず端末内（localStorage）だけに保存し、書き出したJSONで引っ越しできるようにした</li>
+                            <li>配色はよくある紫・青のグラデーションを避け、落ち着いた色を使っている</li>
+                          </ul>
+                        </div>
+                        <div className="proj-group">
+                          <span className="featured-group-label">次に改善したいこと（未実装）</span>
+                          <ul className="mini-list">
+                            <li>忘却のタイミングに合わせた復習日の自動計算（SRS）</li>
+                            <li>写真やPDFからの問題作成</li>
+                            <li>SPIやCABなど適性検査形式への対応</li>
+                          </ul>
+                        </div>
                       </div>
                     </div>
                     <div className="featured-actions">
@@ -321,9 +381,24 @@ export default function Home() {
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        アプリを見る
+                        アプリを試す
                       </a>
-                      <button type="button" className="btn btn--toggle" data-toggle data-label="詳しく見る" aria-expanded="false">
+                      <a
+                        className="btn"
+                        href="https://github.com/Rita8300/oboeko"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        GitHubでコードを見る
+                      </a>
+                      <button
+                        type="button"
+                        className="btn btn--toggle"
+                        data-toggle
+                        data-label="詳しく見る"
+                        aria-expanded="false"
+                        aria-controls="oboeko-detail"
+                      >
                         <span className="toggle-label">詳しく見る</span>
                         <span className="toggle-chevron" aria-hidden="true" />
                       </button>
@@ -385,7 +460,7 @@ export default function Home() {
                         </dd>
                       </div>
                     </dl>
-                    <div className="expandable-body">
+                    <div id="machiquest-detail" className="expandable-body" hidden>
                       <div className="expandable-inner">
                         <div className="proj-group">
                           <span className="featured-group-label">収益モデル</span>
@@ -424,7 +499,14 @@ export default function Home() {
                       >
                         詳しい企画書を見る
                       </a>
-                      <button type="button" className="btn btn--toggle" data-toggle data-label="詳しく見る" aria-expanded="false">
+                      <button
+                        type="button"
+                        className="btn btn--toggle"
+                        data-toggle
+                        data-label="詳しく見る"
+                        aria-expanded="false"
+                        aria-controls="machiquest-detail"
+                      >
                         <span className="toggle-label">詳しく見る</span>
                         <span className="toggle-chevron" aria-hidden="true" />
                       </button>
@@ -456,7 +538,7 @@ export default function Home() {
                     <li>コミュニティ運営</li>
                     <li>チーム運営</li>
                   </ul>
-                  <div className="expandable-body">
+                  <div id="exp-history-detail" className="expandable-body" hidden>
                     <div className="expandable-inner">
                       <p className="featured-detail-text">
                         当初は約5人まで減り、研究発表中心の活動が新入生には堅く見えていた。歴史クイズを企画し、もともとあった史跡見学を新入生向けの体験企画として活用しながら、参加者の反応やアンケートをもとに改善を重ねた。
@@ -472,7 +554,14 @@ export default function Home() {
                       </p>
                     </div>
                   </div>
-                  <button type="button" className="exp-toggle" data-toggle data-label="詳しく見る" aria-expanded="false">
+                  <button
+                    type="button"
+                    className="exp-toggle"
+                    data-toggle
+                    data-label="詳しく見る"
+                    aria-expanded="false"
+                    aria-controls="exp-history-detail"
+                  >
                     <span className="toggle-label">詳しく見る</span>
                     <span className="toggle-chevron" aria-hidden="true" />
                   </button>
@@ -487,7 +576,7 @@ export default function Home() {
                     <li>指導</li>
                     <li>コミュニケーション</li>
                   </ul>
-                  <div className="expandable-body">
+                  <div id="exp-tutor-detail" className="expandable-body" hidden>
                     <div className="expandable-inner">
                       <p className="featured-detail-text">
                         英語の前置詞でつまずいていた生徒には、本人が読んでいた漫画の英題（Attack on Titan）を例に、on
@@ -495,7 +584,14 @@ export default function Home() {
                       </p>
                     </div>
                   </div>
-                  <button type="button" className="exp-toggle" data-toggle data-label="詳しく見る" aria-expanded="false">
+                  <button
+                    type="button"
+                    className="exp-toggle"
+                    data-toggle
+                    data-label="詳しく見る"
+                    aria-expanded="false"
+                    aria-controls="exp-tutor-detail"
+                  >
                     <span className="toggle-label">詳しく見る</span>
                     <span className="toggle-chevron" aria-hidden="true" />
                   </button>
@@ -511,14 +607,21 @@ export default function Home() {
                     <li>リサーチ</li>
                     <li>プレゼン</li>
                   </ul>
-                  <div className="expandable-body">
+                  <div id="exp-corplaw-detail" className="expandable-body" hidden>
                     <div className="expandable-inner">
                       <p className="featured-detail-text">
                         中でも印象に残っているのは、会社の政治献金が目的の範囲に含まれるかが争われた八幡製鉄政治献金事件で、企業活動は利益の追求だけでなく社会との関係の中でも考える必要があることを学んだ。質疑応答を通じて、根拠を示しながら説明する力を磨いている。
                       </p>
                     </div>
                   </div>
-                  <button type="button" className="exp-toggle" data-toggle data-label="詳しく見る" aria-expanded="false">
+                  <button
+                    type="button"
+                    className="exp-toggle"
+                    data-toggle
+                    data-label="詳しく見る"
+                    aria-expanded="false"
+                    aria-controls="exp-corplaw-detail"
+                  >
                     <span className="toggle-label">詳しく見る</span>
                     <span className="toggle-chevron" aria-hidden="true" />
                   </button>
@@ -534,7 +637,7 @@ export default function Home() {
                     <li>企業研究</li>
                     <li>新規事業</li>
                   </ul>
-                  <div className="expandable-body">
+                  <div id="exp-intern-detail" className="expandable-body" hidden>
                     <div className="expandable-inner">
                       <ul className="companies">
                         <li>GMOペパボ</li>
@@ -549,7 +652,14 @@ export default function Home() {
                       </p>
                     </div>
                   </div>
-                  <button type="button" className="exp-toggle" data-toggle data-label="詳しく見る" aria-expanded="false">
+                  <button
+                    type="button"
+                    className="exp-toggle"
+                    data-toggle
+                    data-label="詳しく見る"
+                    aria-expanded="false"
+                    aria-controls="exp-intern-detail"
+                  >
                     <span className="toggle-label">詳しく見る</span>
                     <span className="toggle-chevron" aria-hidden="true" />
                   </button>

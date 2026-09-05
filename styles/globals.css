@@ -312,6 +312,22 @@ main:focus {
   font-size: 0.68rem;
   padding: 3px 9px;
 }
+.featured-meta {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 0 0 14px;
+}
+.featured-meta li {
+  font-family: 'Space Grotesk', 'Zen Kaku Gothic New', sans-serif;
+  font-size: 0.76rem;
+  color: var(--text-dim);
+  background: var(--surface-muted);
+  border-radius: 999px;
+  padding: 4px 11px;
+}
 .featured-tagline {
   margin: 0 0 20px;
   color: var(--text-dim);
@@ -472,9 +488,80 @@ main:focus {
 .mock-oboeko-strip span {
   opacity: 0.6;
 }
+.mock-flow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 640px) {
+  .mock-flow {
+    grid-template-columns: 1fr;
+  }
+}
+.mock-step {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.mock-step-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
+  color: #8a3324;
+  font-weight: 700;
+}
+.mock-flashcard {
+  background: #fffdf9;
+  border: 1px solid #ddd0b8;
+  border-top: 3px solid #8a3324;
+  border-radius: 6px;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+.mock-flashcard-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: #a89f94;
+}
+.mock-flashcard-text {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #29241e;
+  line-height: 1.5;
+}
+.mock-flashcard-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+.mock-flashcard-actions span {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.66rem;
+  border: 1px solid #ddd0b8;
+  border-radius: 999px;
+  padding: 4px 10px;
+  color: #6b6055;
+}
+.mock-flashcard-actions span.is-primary {
+  background: #3f5d47;
+  border-color: #3f5d47;
+  color: #fffdf9;
+}
+.mock-result {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #6b6055;
+  line-height: 1.6;
+}
 .mock-oboeko-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 10px;
 }
 .mock-deck {
