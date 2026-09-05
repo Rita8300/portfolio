@@ -195,6 +195,15 @@ export default function Home() {
         />
         <meta name="theme-color" content="#0b0d10" />
         <meta name="color-scheme" content="dark" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="宮本琉太 | 福岡大学 法学部 3年" />
+        <meta
+          property="og:description"
+          content="会社法を学びながら、AIを活用したアプリ開発（暗記学習アプリ「おぼえこ」など）に取り組む学生のポートフォリオ。"
+        />
+        <meta property="og:url" content="https://ryuta-miyamoto.lolipop-now.app/" />
+        <meta name="twitter:card" content="summary" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </Head>
@@ -574,7 +583,7 @@ export default function Home() {
                 <div className="card">
                   <h3>課題を見つけ、動く形にできる</h3>
                   <p>
-                    IT企業のインターンでは、個人店の集客課題に対して街歩きとゲーミフィケーションを組み合わせたサービスを企画し、対象顧客・収益モデル・実証方法まで具体化して優秀賞をいただいた。学習アプリ「おぼえこ」も、自分の「覚えにくい」を出発点に、機能を絞ったWeb版まで作った。ChatGPT・Claude・Codexは道具として使い、目的や利用者像は自分で考え、確認・修正しながら仕上げている。
+                    IT企業のインターンでは、個人店の集客課題に街歩き×ゲーミフィケーションのサービスを企画し、優秀賞をいただいた。学習アプリ「おぼえこ」も、自分の「覚えにくい」を出発点にWeb版まで作った。AIは道具として使い、目的や利用者像は自分で考えている。
                   </p>
                 </div>
               </div>
