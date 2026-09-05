@@ -75,9 +75,43 @@ export default function Home() {
         if (!wrap) return;
         const open = wrap.classList.toggle('is-open');
         btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-        btn.textContent = open ? '閉じる' : btn.dataset.label || '詳しく見る';
+        const label = btn.querySelector('.toggle-label');
+        if (label) label.textContent = open ? '閉じる' : btn.dataset.label || '詳しく見る';
       });
     });
+
+    // --- ナビのスクロールスパイ（今見ているセクションをハイライト） ---
+    // IntersectionObserver ではなく実座標で判定する。バックグラウンドタブ等で
+    // オブザーバのコールバックが遅延・停止する環境でも確実に動くようにするため。
+    const navItems = Array.from(doc.querySelectorAll('.topnav a'))
+      .map((link) => ({ link, el: doc.getElementById(link.getAttribute('href').slice(1)) }))
+      .filter((item) => item.el);
+    if (navItems.length) {
+      const setActiveNav = () => {
+        const line = window.innerHeight * 0.4;
+        let current = navItems[0];
+        for (const item of navItems) {
+          if (item.el.getBoundingClientRect().top - line <= 0) current = item;
+        }
+        navItems.forEach(({ link }) => link.classList.remove('is-active'));
+        current.link.classList.add('is-active');
+      };
+      setActiveNav();
+      on(window, 'load', setActiveNav);
+      on(window, 'resize', setActiveNav, { passive: true });
+      let lastSpyRun = 0;
+      on(
+        window,
+        'scroll',
+        () => {
+          const now = Date.now();
+          if (now - lastSpyRun < 90) return;
+          lastSpyRun = now;
+          setActiveNav();
+        },
+        { passive: true }
+      );
+    }
 
     // --- アドレスをコピー ---
     const copyBtn = doc.querySelector('[data-copy]');
@@ -185,18 +219,18 @@ export default function Home() {
               <h2>Key Results</h2>
             </div>
             <div className="section-body">
-              <div data-reveal className="highlight-grid">
-                <div className="highlight-card">
+              <div className="highlight-grid">
+                <div className="highlight-card" data-reveal>
                   <span className="highlight-eyebrow">Webアプリ開発</span>
                   <strong className="highlight-stat">おぼえこ</strong>
                   <p>React / TypeScriptで学習アプリを開発</p>
                 </div>
-                <div className="highlight-card">
+                <div className="highlight-card" data-reveal style={{ '--reveal-delay': '90ms' }}>
                   <span className="highlight-eyebrow">新規事業企画</span>
                   <strong className="highlight-stat">優秀賞</strong>
                   <p>IT企業の1Dayインターンで新規事業を企画</p>
                 </div>
-                <div className="highlight-card">
+                <div className="highlight-card" data-reveal style={{ '--reveal-delay': '180ms' }}>
                   <span className="highlight-eyebrow">組織運営</span>
                   <strong className="highlight-stat">約30人規模</strong>
                   <p>歴史学研究会を現役部員一桁から立て直し</p>
@@ -214,9 +248,9 @@ export default function Home() {
               <h2>Featured Works</h2>
             </div>
             <div className="section-body">
-              <div data-reveal className="featured-list">
+              <div className="featured-list">
                 {/* --- おぼえこ --- */}
-                <article id="work-oboeko" className="featured expandable">
+                <article id="work-oboeko" className="featured expandable" data-reveal>
                   <div className="mock mock--oboeko" aria-hidden="true">
                     <div className="mock-topbar">
                       <span />
@@ -289,15 +323,16 @@ export default function Home() {
                       >
                         アプリを見る
                       </a>
-                      <button type="button" className="btn" data-toggle data-label="詳しく見る" aria-expanded="false">
-                        詳しく見る
+                      <button type="button" className="btn btn--toggle" data-toggle data-label="詳しく見る" aria-expanded="false">
+                        <span className="toggle-label">詳しく見る</span>
+                        <span className="toggle-chevron" aria-hidden="true" />
                       </button>
                     </div>
                   </div>
                 </article>
 
                 {/* --- MachiQuest --- */}
-                <article id="work-machiquest" className="featured expandable">
+                <article id="work-machiquest" className="featured expandable" data-reveal style={{ '--reveal-delay': '90ms' }}>
                   <div className="mock mock--machiquest" aria-hidden="true">
                     <div className="mock-topbar mock-topbar--dark">
                       <span />
@@ -389,8 +424,9 @@ export default function Home() {
                       >
                         詳しい企画書を見る
                       </a>
-                      <button type="button" className="btn" data-toggle data-label="詳しく見る" aria-expanded="false">
-                        詳しく見る
+                      <button type="button" className="btn btn--toggle" data-toggle data-label="詳しく見る" aria-expanded="false">
+                        <span className="toggle-label">詳しく見る</span>
+                        <span className="toggle-chevron" aria-hidden="true" />
                       </button>
                     </div>
                   </div>
@@ -408,8 +444,8 @@ export default function Home() {
               <h2>Experience</h2>
             </div>
             <div className="section-body">
-              <div data-reveal className="exp-grid">
-                <article className="exp-card expandable">
+              <div className="exp-grid">
+                <article className="exp-card expandable" data-reveal>
                   <h3>歴史学研究会</h3>
                   <p className="exp-summary">
                     現役部員が一桁まで減少していた研究会で、新歓企画や活動内容を見直しました。歴史初心者でも参加しやすいクイズ企画や史跡見学旅行などを実施し、登録・参加希望者を含め約30人規模まで拡大しました。
@@ -437,11 +473,12 @@ export default function Home() {
                     </div>
                   </div>
                   <button type="button" className="exp-toggle" data-toggle data-label="詳しく見る" aria-expanded="false">
-                    詳しく見る
+                    <span className="toggle-label">詳しく見る</span>
+                    <span className="toggle-chevron" aria-hidden="true" />
                   </button>
                 </article>
 
-                <article className="exp-card expandable">
+                <article className="exp-card expandable" data-reveal>
                   <h3>家庭教師</h3>
                   <p className="exp-summary">
                     生徒が解けない原因を「理解力不足」と決めつけず、どこでつまずいているのかを確認して伝え方を変えてきました。
@@ -459,11 +496,12 @@ export default function Home() {
                     </div>
                   </div>
                   <button type="button" className="exp-toggle" data-toggle data-label="詳しく見る" aria-expanded="false">
-                    詳しく見る
+                    <span className="toggle-label">詳しく見る</span>
+                    <span className="toggle-chevron" aria-hidden="true" />
                   </button>
                 </article>
 
-                <article className="exp-card expandable">
+                <article className="exp-card expandable" data-reveal>
                   <h3>会社法ゼミ</h3>
                   <p className="exp-summary">
                     会社法の判例を2〜3人のグループで調査し発表。株主総会や取締役会の役割、取締役の責任などを学んでいます。
@@ -481,11 +519,12 @@ export default function Home() {
                     </div>
                   </div>
                   <button type="button" className="exp-toggle" data-toggle data-label="詳しく見る" aria-expanded="false">
-                    詳しく見る
+                    <span className="toggle-label">詳しく見る</span>
+                    <span className="toggle-chevron" aria-hidden="true" />
                   </button>
                 </article>
 
-                <article className="exp-card expandable">
+                <article className="exp-card expandable" data-reveal>
                   <h3>インターン・企業研究</h3>
                   <p className="exp-summary">
                     GMOペパボなどのインターン・企業研究に参加。新規事業の企画・提案を経験しました（詳しくは
@@ -511,7 +550,8 @@ export default function Home() {
                     </div>
                   </div>
                   <button type="button" className="exp-toggle" data-toggle data-label="詳しく見る" aria-expanded="false">
-                    詳しく見る
+                    <span className="toggle-label">詳しく見る</span>
+                    <span className="toggle-chevron" aria-hidden="true" />
                   </button>
                 </article>
               </div>
@@ -530,29 +570,29 @@ export default function Home() {
               <p data-reveal className="section-note">
                 その他の制作・構想。進行度合いはそれぞれ異なります。
               </p>
-              <div data-reveal className="other-grid">
-                <article className="other-card">
+              <div className="other-grid">
+                <article className="other-card" data-reveal>
                   <div className="other-top">
                     <h3>TOEIC英単語学習ツール</h3>
                     <span className="status-pill status-pill--sm">Prototype</span>
                   </div>
                   <p>Excelを使って英単語を反復学習できる仕組みを制作。自分の学習の不便を出発点にした個人用ツール。</p>
                 </article>
-                <article className="other-card">
+                <article className="other-card" data-reveal>
                   <div className="other-top">
                     <h3>配信支援アプリ</h3>
                     <span className="status-pill status-pill--sm">Experiment</span>
                   </div>
                   <p>ニコニコ生放送などを想定し、コメントやギフトのランキングを表示する試作。Node.jsでローカル動作を確認。</p>
                 </article>
-                <article className="other-card">
+                <article className="other-card" data-reveal>
                   <div className="other-top">
                     <h3>大学授業・単位案内Bot</h3>
                     <span className="status-pill status-pill--sm">Concept</span>
                   </div>
                   <p>大学の学修ガイドを読み込ませ、授業や単位に関する質問に答えるBotの構想。</p>
                 </article>
-                <article className="other-card">
+                <article className="other-card" data-reveal>
                   <div className="other-top">
                     <h3>法学部学生向けDiscordコミュニティ</h3>
                     <span className="status-pill status-pill--sm">Concept</span>
@@ -572,8 +612,8 @@ export default function Home() {
               <h2>Skills</h2>
             </div>
             <div className="section-body">
-              <div data-reveal className="skill-groups">
-                <div className="skill-group">
+              <div className="skill-groups">
+                <div className="skill-group" data-reveal>
                   <h3>Frontend</h3>
                   <ul className="chips">
                     <li>React</li>
@@ -585,7 +625,7 @@ export default function Home() {
                   </ul>
                   <p className="skill-use">WebアプリのUI設計・実装に使用。</p>
                 </div>
-                <div className="skill-group">
+                <div className="skill-group" data-reveal>
                   <h3>AI-assisted Development</h3>
                   <ul className="chips">
                     <li>ChatGPT</li>
@@ -594,7 +634,7 @@ export default function Home() {
                   </ul>
                   <p className="skill-use">企画整理、仕様作成、実装補助、デバッグ、アイデア検証などに活用。</p>
                 </div>
-                <div className="skill-group">
+                <div className="skill-group" data-reveal>
                   <h3>Prototype / Other</h3>
                   <ul className="chips">
                     <li>Python</li>
