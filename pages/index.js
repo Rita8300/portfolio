@@ -245,7 +245,7 @@ export default function Home() {
                 <div className="highlight-card" data-reveal style={{ '--reveal-delay': '90ms' }}>
                   <span className="highlight-eyebrow">新規事業企画</span>
                   <strong className="highlight-stat">優秀賞</strong>
-                  <p>IT企業の1Dayインターンで新規事業を企画</p>
+                  <p>IT企業のサマーインターンで新規事業を企画</p>
                 </div>
                 <div className="highlight-card" data-reveal style={{ '--reveal-delay': '180ms' }}>
                   <span className="highlight-eyebrow">組織運営</span>
@@ -415,7 +415,7 @@ export default function Home() {
                       <span />
                     </div>
                     <div className="mock-mq-body">
-                      <p className="mock-mq-kicker">IT企業 1DAY インターン ／ 新規事業ワーク</p>
+                      <p className="mock-mq-kicker">IT企業 サマーインターン ／ 新規事業ワーク</p>
                       <p className="mock-mq-title">個人店の集客 × ゲーミフィケーション</p>
                       <p className="mock-mq-name">
                         マチクエ
@@ -433,7 +433,7 @@ export default function Home() {
                     <div className="featured-top">
                       <span className="featured-no">02</span>
                       <h3>MachiQuest</h3>
-                      <span className="status-pill status-pill--award">IT企業 1Dayインターン 優秀賞</span>
+                      <span className="status-pill status-pill--award">IT企業 サマーインターン 優秀賞</span>
                     </div>
                     <p className="featured-tagline">個人店の集客とゲーミフィケーションを組み合わせた新規事業企画</p>
                     <dl className="featured-facts">
