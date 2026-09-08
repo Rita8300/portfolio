@@ -415,7 +415,7 @@ export default function Home() {
                       <span />
                     </div>
                     <div className="mock-mq-body">
-                      <p className="mock-mq-kicker">GMO PEPABO 1DAY INTERNSHIP ／ WORK2</p>
+                      <p className="mock-mq-kicker">IT企業 1DAY インターン ／ 新規事業ワーク</p>
                       <p className="mock-mq-title">個人店の集客 × ゲーミフィケーション</p>
                       <p className="mock-mq-name">
                         マチクエ
