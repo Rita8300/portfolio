@@ -630,7 +630,7 @@ export default function Home() {
                 <article className="exp-card expandable" data-reveal>
                   <h3>インターン・企業研究</h3>
                   <p className="exp-summary">
-                    GMOペパボなどのインターン・企業研究に参加。新規事業の企画・提案を経験しました（詳しくは
+                    IT・SIer・インフラ・金融など、複数企業のインターンや企業研究に参加。新規事業の企画・提案を経験しました（詳しくは
                     <a href="#work-machiquest">MachiQuest</a>を参照）。
                   </p>
                   <ul className="exp-tags">
@@ -640,15 +640,13 @@ export default function Home() {
                   <div id="exp-intern-detail" className="expandable-body" hidden>
                     <div className="expandable-inner">
                       <ul className="companies">
-                        <li>GMOペパボ</li>
-                        <li>かんぽシステムソリューションズ</li>
-                        <li>さくら情報システム</li>
-                        <li>九州電力</li>
-                        <li>福岡銀行</li>
-                        <li>GMOインターネットグループ関連イベント</li>
+                        <li>IT（Webサービス）</li>
+                        <li>SIer</li>
+                        <li>インフラ（電力）</li>
+                        <li>金融（地方銀行）</li>
                       </ul>
                       <p className="featured-detail-text">
-                        参加・研究した企業。参加を通して、AIによる業務効率化だけでなく、空いた時間を新しい提案や顧客対応へ振り向ける考え方に関心を持った。
+                        業種の異なる企業のインターンや企業研究に参加。AIによる業務効率化だけでなく、空いた時間を新しい提案や顧客対応へ振り向ける考え方に関心を持った。（社名は伏せています）
                       </p>
                     </div>
                   </div>
